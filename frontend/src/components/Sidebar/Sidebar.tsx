@@ -6,6 +6,7 @@ const Sidebar = () => {
 
     const currentPath = location.pathname;
     const navigate = useNavigate();
+    const name = localStorage.getItem('name') || 'User';
     return (
         <div className={styles.container}>
             <div className={styles.topContainer}>
@@ -17,7 +18,7 @@ const Sidebar = () => {
                 <div className={styles.sidebarMenu}>
                     <div
                         className={`${styles.menuItem} ${currentPath.includes('/home') ? styles.activeMenuItem : ''}`}
-                        onClick={() => navigate('/home')}>
+                        onClick={() => navigate('/dashboard')}>
                         <GoHome size={25} />
                         <p>Dashboard</p>
                     </div>
@@ -35,7 +36,7 @@ const Sidebar = () => {
                     <img src="/default-three.png" alt="profile picture" />
                 </div>
                 <div className={styles.textContainer}>
-                    <p> Aswin V Sivan </p>
+                    <p> {name} </p>
                     <span> Agent</span>
                 </div>
             </div>
