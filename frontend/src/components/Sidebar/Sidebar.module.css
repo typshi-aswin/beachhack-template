@@ -5,7 +5,7 @@
     padding-top: 2rem;
     padding-bottom: 1rem;
     position: fixed;
-    min-width: 150px;
+    min-width: 250px;
     height: calc(100vh - 1rem);
     z-index: 1000;
     overflow-y: hidden;
@@ -97,3 +97,18 @@
         color: var(--color-purple-shade-two)
     }
 }
+
+.logoutButton {
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.35rem 0.35rem;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.logoutButton:hover {
+    background-color: #ffcccc;
+}
+
