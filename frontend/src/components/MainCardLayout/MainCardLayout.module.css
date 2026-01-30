@@ -1,0 +1,19 @@
+.outerContainer {
+    display: flex;
+    padding: 0.5rem;
+    gap: 0.8rem;
+    min-height: 100vh;
+    position: relative;
+}
+
+.mainCard {
+    display: flex;
+    flex-direction: column;
+    padding: 3rem 4rem;
+    background-color: var(--color-white-shade-two);
+    border-radius: 20px;
+    overflow: hidden;
+    width: calc(100% - 320px);
+    flex: 1;
+    margin-left: 280px;
+}
