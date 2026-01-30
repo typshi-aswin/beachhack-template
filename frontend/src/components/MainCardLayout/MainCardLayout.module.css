@@ -9,7 +9,7 @@
 .mainCard {
     display: flex;
     flex-direction: column;
-    padding: 3rem 4rem;
+    padding: 3rem 2.5rem;
     background-color: var(--color-white-shade-two);
     border-radius: 20px;
     overflow: hidden;
