@@ -1,0 +1,22 @@
+services:
+  customerx:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: customerx
+    image: customerx
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
+    restart: always
+    ports:
+      - "8013:8000"
+    volumes:
+      - /var/log/customerx:/var/log/customerx
+    env_file:
+      - .env
+    mem_limit: 358m
+    networks:
+      - shared_network
+
+networks:
+  shared_network:
+    external: true
