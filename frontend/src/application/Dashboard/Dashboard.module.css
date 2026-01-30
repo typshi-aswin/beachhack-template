@@ -1,0 +1,38 @@
+.container {
+    display:flex;
+    flex-direction:column;
+    align-items: center;
+    width:100%;
+    gap: 2rem
+}
+
+.topContainer {
+    display:flex;
+    align-items: center;
+    justify-content: space-between;
+    width:100%;
+    h1 {
+        font-size: 1.8rem;
+        color: var(--color-primary-text-color);
+    }
+}
+
+.buttonDesign {
+    cursor: pointer;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    background-color: var(--color-purple-shade-two);
+    color: var(--color-white-shade-one);
+    padding: 0.8rem 1.5rem;
+    border-radius: 10px;
+}
+
+.cardsContainer {
+  margin-top: 1.5rem;
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.5rem;
+}
