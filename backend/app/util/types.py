@@ -9,3 +9,13 @@ class JWTTokenKey(Enum):
 
 class Algorithm(Enum):
     HS256 = 'HS256'
+
+
+class InteractionStatus(Enum):
+    PENDING = 'Pending'
+    COMPLETED = 'Completed'
+    FAILED = 'Failed'
+
+    @staticmethod
+    def get_all_status():
+        return [role.value for role in InteractionStatus]
