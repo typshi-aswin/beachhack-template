@@ -79,5 +79,6 @@ async def score_indicator(customer_id: str, db: SessionDep, current_user: Curren
         "facts": interaction.nlp_output["facts"],
         "friction": interaction.nlp_output["friction"],
         "summary": interaction.nlp_output["summary"],
-        "intent": interaction.nlp_output["intent"]
+        "intent": interaction.nlp_output["intent"],
+        "suggested_actions": interaction.nlp_output["suggested_actions"]
     }for interaction in interactions]).get_success_response()
