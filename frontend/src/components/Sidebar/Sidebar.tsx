@@ -3,6 +3,7 @@ import { GoHome } from "react-icons/go";
 import { IoMdPeople } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
 import { MdOutlineLogout } from "react-icons/md";
+import { SiGoogleanalytics } from "react-icons/si";
 import { logout } from "../../utils/logout";
 
 const Sidebar = () => {
@@ -31,6 +32,13 @@ const Sidebar = () => {
           >
             <IoMdPeople size={25} />
             <p>Customer Chat</p>
+          </div>
+          <div
+            className={`${styles.menuItem} ${currentPath.includes("/analytics") ? styles.activeMenuItem : ""}`}
+            onClick={() => navigate("/analytics")}
+          >
+            <SiGoogleanalytics size={20} />
+            <p>Analytics</p>
           </div>
         </div>
       </div>
