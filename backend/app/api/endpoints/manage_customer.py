@@ -1,9 +1,9 @@
 from typing import List
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter
 from sqlalchemy.future import select
 
 from app.db.models import Customer
-from app.api.deps import SessionDep, CurrentUserDep, PayloadDep
+from app.api.deps import SessionDep, CurrentUserDep
 from app.schemas.customer import CustomerCreate, CustomerUpdate, CustomerResponse
 from app.core.exception_handler import ExceptionLoggingRoute
 from app.util.response import CustomResponse
@@ -49,10 +49,7 @@ async def create_customer(data: CustomerCreate, db: SessionDep, current_user: Cu
     await db.commit()
     await db.refresh(customer)
 
-    return CustomResponse(
-        general_message="Customer created successfully",
-        response=customer,
-    ).get_success_response()
+    return CustomResponse(general_message="Customer created successfully").get_success_response()
 
 
 @router.get("/list/")
