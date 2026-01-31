@@ -119,7 +119,7 @@ async def score_indicator(db: SessionDep, current_user: CurrentUserDep, search: 
                 Interaction.nlp_output["summary"]["summary_short"]
                 .astext.ilike(search_pattern),
             )
-        )
+        ).order_by(desc(Interaction.created_at))
 
     interactions = (await db.scalars(query)).all()
 
