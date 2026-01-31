@@ -5,6 +5,7 @@ import AuthCheck from "./components/Auth";
 import Analytics from "./application/Analytics/Analytics";
 import CustomerChat from "./application/CustomerChat/CustomerChat";
 import Profile from "./application/Profile/Profile";
+import ConversationView from "./application/ConversationView/ConversationView";
 
 import { Navigate } from "react-router-dom";
 export const router = createBrowserRouter([
@@ -36,6 +37,10 @@ export const router = createBrowserRouter([
         path: '/:customer-id/profile',
         element: <Profile />,
       },
+      {
+        path: '/:conversation_id/view',
+        element: <ConversationView />
+      }
 
     ],
   },

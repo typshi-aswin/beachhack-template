@@ -2,6 +2,7 @@ const buildURL = (basePath: string) => (endpoint: string) => `${basePath}${endpo
 
 const manageAuthURL = buildURL('/auth');
 const manageCustomerURL = buildURL(`/manage-customer`);
+const manageOperation = buildURL(`/manage-operation`);
 
 export const authUrls = {
     register: manageAuthURL(`/register/`),
@@ -12,4 +13,9 @@ export const authUrls = {
 export const manageCustomerUrls = {
     list: manageCustomerURL(`/list/`),
     info:(customer_id: string) => manageCustomerURL(`/${customer_id}/view`)
+}
+
+export const manageOperationUrls = {
+    viewScore:(customer_id: string) => manageOperation(`/${customer_id}/view-score`),
+    viewAllScore: manageOperation(`/all-customer-score/`),
 }
