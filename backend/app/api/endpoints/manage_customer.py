@@ -61,7 +61,7 @@ async def list_customers(db: SessionDep, current_user: CurrentUserDep):
         "primary_email": customer.primary_email,
         "primary_phone": customer.primary_phone,
         "name": customer.name,
-        "last_interaction_at": customer.last_interaction_at,
+        "last_interaction_at": str(customer.last_interaction_at),
         "consent_flags": customer.consent_flags
     } for customer in customers]).get_success_response()
 
@@ -75,7 +75,7 @@ async def view_customer(customer_id: str, db: SessionDep, current_user: CurrentU
         "primary_email": customer.primary_email,
         "primary_phone": customer.primary_phone,
         "name": customer.name,
-        "last_interaction_at": customer.last_interaction_at,
+        "last_interaction_at": str(customer.last_interaction_at),
         "consent_flags": customer.consent_flags
     }]).get_success_response()
 
