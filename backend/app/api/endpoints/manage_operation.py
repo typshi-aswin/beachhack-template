@@ -2,6 +2,7 @@ import json
 
 from fastapi import APIRouter
 from sqlalchemy.future import select
+from datetime import datetime, timezone
 
 from app.db.models import Customer, Interaction
 from app.api.deps import SessionDep, CurrentUserDep
@@ -10,10 +11,6 @@ from app.util.response import CustomResponse
 
 router = APIRouter(route_class=ExceptionLoggingRoute)
 
-
-import json
-from datetime import datetime, timezone
-from sqlalchemy import select
 
 @router.post("/create/")
 async def create_interaction(data: dict, db: SessionDep, current_user: CurrentUserDep):
@@ -67,3 +64,20 @@ async def create_interaction(data: dict, db: SessionDep, current_user: CurrentUs
 
     await db.commit()
     return CustomResponse(general_message="Customer interaction processed successfully").get_success_response()
+
+
+@router.get("/{customer_id}/view-score/")
+async def score_indicator(customer_id: str, db: SessionDep, current_user: CurrentUserDep):
+    if not (await db.scalar(select(Customer).filter(Customer.id == customer_id))):
+        return CustomResponse(general_message="Customer not found").get_failure_response()
+    
+    interactions = await db.scalars(select(Interaction).filter(Interaction.customer_id == customer_id))
+
+    return CustomResponse(response=[{
+        "id": interaction.id,
+        "channel": interaction.channel,
+        "facts": interaction.nlp_output["facts"],
+        "friction": interaction.nlp_output["friction"],
+        "summary": interaction.nlp_output["summary"],
+        "intent": interaction.nlp_output["intent"]
+    }for interaction in interactions]).get_success_response()
