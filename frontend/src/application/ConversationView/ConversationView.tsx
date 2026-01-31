@@ -9,8 +9,7 @@ const ConversationView = () => {
   const params = useParams();
   const conversationId = params["conversation_id"];
 
-  const [allConversations, setAllConversations] =
-    useState<CustomerOperationViewType[]>();
+  const [allConversations, setAllConversations] = useState<CustomerOperationViewType[]>();
   const [conversation, setConversation] = useState<CustomerOperationViewType>();
 
   useEffect(() => {

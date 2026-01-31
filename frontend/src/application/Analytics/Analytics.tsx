@@ -9,6 +9,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import * as XLSX from "xlsx";
 
 const trendingIssues = [
   { issue: "Login failures", count: 342, trend: "+18%" },
@@ -53,12 +54,59 @@ const currentFriction = 61;
 const frictionStatus = "Improving"; // Improving | Degrading | Stable
 
 const Analytics = () => {
+  const handleExport = () => {
+    const workbook = XLSX.utils.book_new();
+
+    // Sheet 1: Trending Issues
+    const trendingSheet = XLSX.utils.json_to_sheet(trendingIssues);
+    XLSX.utils.book_append_sheet(workbook, trendingSheet, "Trending Issues");
+
+    // Sheet 2: Unresolved Issues
+    const unresolvedSheet = XLSX.utils.json_to_sheet(unresolvedIssues);
+    XLSX.utils.book_append_sheet(
+      workbook,
+      unresolvedSheet,
+      "Unresolved Issues",
+    );
+
+    // Sheet 3: Top Actions
+    const actionsSheet = XLSX.utils.json_to_sheet(topActions);
+    XLSX.utils.book_append_sheet(workbook, actionsSheet, "Top Actions");
+
+    // Sheet 4: Friction Trend
+    const frictionSheet = XLSX.utils.json_to_sheet(frictionTrendData);
+    XLSX.utils.book_append_sheet(workbook, frictionSheet, "Friction Trend");
+
+    // Sheet 5: Automation Acceptance
+    const automationSheet = XLSX.utils.json_to_sheet(automationAcceptance);
+    XLSX.utils.book_append_sheet(
+      workbook,
+      automationSheet,
+      "Automation Acceptance",
+    );
+
+    // Sheet 6: Summary
+    const summarySheet = XLSX.utils.json_to_sheet([
+      {
+        currentFriction,
+        frictionStatus,
+      },
+    ]);
+    XLSX.utils.book_append_sheet(workbook, summarySheet, "Summary");
+
+    XLSX.writeFile(workbook, "analytics-report.xlsx");
+  };
+
   return (
     <MainCardLayout>
       <div className={styles.container}>
         <div className={styles.topContainer}>
           <h1>Analytics</h1>
-          <div className={styles.buttonDesign}>
+          <div
+            className={styles.buttonDesign}
+            onClick={handleExport}
+            style={{ cursor: "pointer" }}
+          >
             <IoMdDownload />
             Export
           </div>

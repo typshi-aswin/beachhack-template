@@ -1,11 +1,11 @@
+//Profile.tsx
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import MainCardLayout from "../../components/MainCardLayout/MainCardLayout";
 import styles from "./Profile.module.css";
 import { getSingleCustomer } from "../../apis/customer";
-import { CustomerType } from "../../types";
+import { CustomerType, CustomerOperationViewType } from "../../types";
 import { getCustomerOperationView } from "../../apis/operations";
-import { CustomerOperationViewType } from "../../types";
 
 const profileImages = [
   "/default-one.png",
@@ -15,101 +15,44 @@ const profileImages = [
   "/default-five.png",
 ];
 
-const timelineEvents = [
-  {
-    date: new Date("2024-01-20T10:00:00"),
-    type: "CHAT",
-    description: "First contact initiated",
-    meta: "Sentiment: Positive (0.68)",
-  },
-  {
-    date: new Date("2024-01-25T14:30:00"),
-    type: "EMAIL",
-    description: "Order not received",
-    meta: "Sentiment: Negative (-0.65)",
-  },
-  {
-    date: new Date("2024-01-28T10:15:00"),
-    type: "CHAT",
-    description: "Refund & delivery issue discussed",
-    meta: "Sentiment: Neutral (0.12)",
-  },
-  {
-    date: new Date("2024-01-28T10:30:00"),
-    type: "CALL",
-    description: "Escalated to supervisor",
-    meta: "High friction detected (0.82)",
-  },
-];
-
 const Profile = () => {
   const params = useParams();
   const customerId = params["customer-id"];
-  const [operationView, setOperationView] =
-    useState<CustomerOperationViewType>();
+  const [operationViews, setOperationViews] = useState<CustomerOperationViewType[]>([]);
+  const [customer, setCustomer] = useState<CustomerType>();
 
   useEffect(() => {
     if (!customerId) return;
 
     getSingleCustomer(customerId, setCustomer);
-    getCustomerOperationView(customerId, setOperationView);
+    // Update this to handle array response
+    getCustomerOperationView(customerId, (data: any) => {
+      // Handle both array and single object responses
+      if (Array.isArray(data)) {
+        setOperationViews(data);
+      } else if (data) {
+        setOperationViews([data] as CustomerOperationViewType[]);
+      } else {
+        setOperationViews([]);
+      }
+    });
   }, [customerId]);
-
-  const [customer, setCustomer] = useState<CustomerType>();
-  const [showTimeline, setShowTimeline] = useState(false);
 
   const profileImage = useMemo(() => {
     return profileImages[Math.floor(Math.random() * profileImages.length)];
   }, []);
 
-  useEffect(() => {
-    if (!customerId) return;
-
-    getSingleCustomer(customerId, setCustomer);
-  }, [customerId]);
-
-  type TimelineRange = "1W" | "1M" | "3M" | "6M" | "1Y";
-
-  const [timelineRange, setTimelineRange] = useState<TimelineRange>("1W");
-
-  const getRangeStartDate = (range: TimelineRange) => {
-    // Anchor to latest event date instead of real current date
-    const latestEventDate =
-      timelineEvents
-        .map((e) => e.date)
-        .sort((a, b) => b.getTime() - a.getTime())[0] || new Date();
-
-    const d = new Date(latestEventDate);
-
-    switch (range) {
-      case "1W":
-        d.setDate(d.getDate() - 7);
-        break;
-      case "1M":
-        d.setMonth(d.getMonth() - 1);
-        break;
-      case "3M":
-        d.setMonth(d.getMonth() - 3);
-        break;
-      case "6M":
-        d.setMonth(d.getMonth() - 6);
-        break;
-      case "1Y":
-        d.setFullYear(d.getFullYear() - 1);
-        break;
-    }
-
-    return d;
+  // Format date from created_at
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleString();
   };
 
-  const filteredTimelineEvents = timelineEvents
-    .filter((event) => event.date >= getRangeStartDate(timelineRange))
-    .sort((a, b) => b.date.getTime() - a.date.getTime());
-
-  const timelineWithLatest = filteredTimelineEvents.map((event, index) => ({
-    ...event,
-    isLatest: index === 0,
-  }));
+  // Sort conversations by created_at (newest first)
+  const sortedConversations = useMemo(() => {
+    return [...operationViews].sort((a, b) => 
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+  }, [operationViews]);
 
   return (
     <MainCardLayout>
@@ -134,82 +77,100 @@ const Profile = () => {
             </span>
           </div>
         </div>
-        {/* ================= CUSTOMER SUMMARY ================= */}
-        <div className={styles.sectionCard}>
-          <div className={styles.summaryHeader}>
-            <h3>Customer Summary</h3>
 
-            <button
-              className={styles.timelineToggle}
-              onClick={() => setShowTimeline((prev) => !prev)}
-            >
-              {showTimeline ? "Hide chat timeline" : "View chat timeline"}
-            </button>
+        {/* ================= HISTORY SECTION ================= */}
+        <div className={styles.sectionCard}>
+          <div className={styles.historyHeader}>
+            <h3>History</h3>
+            <span className={styles.conversationCount}>
+              {sortedConversations.length} conversation{sortedConversations.length !== 1 ? 's' : ''}
+            </span>
           </div>
 
-          <p className={styles.summaryText}>
-            {operationView?.summary?.summary_long ||
-              "No customer summary available yet."}
-          </p>
-          <small className={styles.summaryConfidence}>
-            Confidence:{" "}
-            {operationView?.summary?.confidence
-              ? `${Math.round(operationView.summary.confidence * 100)}%`
-              : "—"}
-          </small>
-
-          {/* ===== TIMELINE (COLLAPSIBLE) ===== */}
-          {showTimeline && (
-            <>
-              {/* FILTERS */}
-              <div className={styles.timelineFilters}>
-                {(["1W", "1M", "3M", "6M", "1Y"] as TimelineRange[]).map(
-                  (range) => (
-                    <button
-                      key={range}
-                      className={`${styles.filterPill} ${
-                        timelineRange === range ? styles.activeFilter : ""
-                      }`}
-                      onClick={() => setTimelineRange(range)}
-                    >
-                      {range}
-                    </button>
-                  ),
-                )}
-              </div>
-
-              {/* TIMELINE */}
-              <div className={styles.timeline}>
-                {timelineWithLatest.map((event, index) => (
-                  <div
-                    key={index}
-                    className={`${styles.timelineItem} ${
-                      event.isLatest ? styles.latest : ""
-                    }`}
-                  >
-                    <div className={styles.timelineTimeSide}>
-                      {event.date.toLocaleString()}
+          {sortedConversations.length === 0 ? (
+            <p className={styles.noHistory}>No conversation history available.</p>
+          ) : (
+            <div className={styles.historyContainer}>
+              {sortedConversations.map((conversation, index) => (
+                <div key={conversation.id || index} className={styles.conversationCard}>
+                  {/* Conversation Header */}
+                  <div className={styles.conversationHeader}>
+                    <div className={styles.conversationMeta}>
+                      <span className={styles.conversationDate}>
+                        {formatDate(conversation.created_at.toString())}
+                      </span>
+                      <span className={`${styles.channelBadge} ${styles[conversation.channel.toLowerCase()]}`}>
+                        {conversation.channel}
+                      </span>
+                      <span className={`${styles.frictionBadge} ${styles[conversation.friction.level]}`}>
+                        {conversation.friction.level} friction
+                      </span>
                     </div>
-
-                    <div className={styles.timelineDot} />
-
-                    <div className={styles.timelineContent}>
-                      <strong className={styles.timelineType}>
-                        {event.type}
-                      </strong>
-                      <p>{event.description}</p>
-                      <small>{event.meta}</small>
+                    <div className={styles.conversationIntent}>
+                      <strong>Intent:</strong> {conversation.intent.intent} 
+                      <small> ({Math.round(conversation.intent.confidence * 100)}%)</small>
                     </div>
                   </div>
-                ))}
 
-                {timelineWithLatest.length === 0 && (
-                  <p className={styles.noTimeline}>
-                    No interactions in this period
-                  </p>
-                )}
-              </div>
-            </>
+                  {/* Summary Section (like timeline) */}
+                  <div className={styles.summarySection}>
+                    <div className={styles.summaryHeader}>
+                      <h4>Summary</h4>
+                      <small>Confidence: {Math.round(conversation.summary.confidence * 100)}%</small>
+                    </div>
+                    <p className={styles.summaryText}>
+                      {conversation.summary.summary_long}
+                    </p>
+                  </div>
+
+                  {/* Facts Section */}
+                  <div className={styles.factsSection}>
+                    <h4>Key Facts</h4>
+                    {conversation.facts.length === 0 ? (
+                      <p className={styles.noFacts}>No facts extracted</p>
+                    ) : (
+                      <div className={styles.factsGrid}>
+                        {conversation.facts.map((fact) => (
+                          <div key={fact.fact_id} className={styles.factCard}>
+                            <div className={styles.factHeader}>
+                              <span className={styles.factKey}>{fact.key}</span>
+                              {fact.is_pii && (
+                                <span className={styles.piiBadge}>PII</span>
+                              )}
+                            </div>
+                            <div className={styles.factValue}>{fact.value}</div>
+                            <div className={styles.factMeta}>
+                              <small>Confidence: {Math.round(fact.confidence * 100)}%</small>
+                              {fact.evidence && (
+                                <div className={styles.factEvidence}>
+                                  <em>"{fact.evidence}"</em>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Suggested Actions (if any) */}
+                  {conversation.suggested_actions && conversation.suggested_actions.length > 0 && (
+                    <div className={styles.actionsSection}>
+                      <h4>Suggested Actions</h4>
+                      <div className={styles.actionsList}>
+                        {conversation.suggested_actions.map((action, actionIndex) => (
+                          <div key={actionIndex} className={styles.actionItem}>
+                            <strong>{action.action_type}</strong>
+                            <p>{action.reason}</p>
+                            <small>Score: {Math.round(action.score * 100)}%</small>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           )}
         </div>
 
@@ -221,13 +182,13 @@ const Profile = () => {
             <div className={styles.added}>
               <strong>ADDED</strong>
               <p>budget_range: 12–15L (confidence: 84%)</p>
-              <span>“Now looking at cars up to 15 lakh” — Jan 28, 10:15</span>
+              <span>"Now looking at cars up to 15 lakh" — Jan 28, 10:15</span>
             </div>
 
             <div className={styles.modified}>
               <strong>MODIFIED</strong>
               <p>preferred_fuel: diesel → petrol</p>
-              <span>“Actually I want petrol now” — Jan 28, 10:17</span>
+              <span>"Actually I want petrol now" — Jan 28, 10:17</span>
             </div>
 
             <div className={styles.resolved}>
@@ -245,21 +206,21 @@ const Profile = () => {
             <div className={styles.healthItem}>
               <span>Friction Score</span>
               <strong>
-                {operationView
-                  ? Math.round(operationView.friction.score * 100)
+                {operationViews.length > 0
+                  ? Math.round(operationViews[0].friction.score * 100)
                   : "—"}{" "}
                 / 100
               </strong>
               <small
                 className={
-                  operationView?.friction.level === "high"
+                  operationViews[0]?.friction.level === "high"
                     ? styles.bad
-                    : operationView?.friction.level === "medium"
+                    : operationViews[0]?.friction.level === "medium"
                       ? styles.neutral
                       : styles.improving
                 }
               >
-                {operationView?.friction.level || "—"}
+                {operationViews[0]?.friction.level || "—"}
               </small>
             </div>
 

@@ -4,10 +4,11 @@ import toast from "react-hot-toast";
 import { AxiosError } from "axios";
 import { CustomerOperationViewType } from "../types";
 
+// Update the type signature to accept array
 export const getCustomerOperationView = async (
   customerId: string,
   setData: React.Dispatch<
-    React.SetStateAction<CustomerOperationViewType | undefined>
+    React.SetStateAction<CustomerOperationViewType[] | undefined> // Change to array
   >
 ) => {
   try {
@@ -15,24 +16,24 @@ export const getCustomerOperationView = async (
       manageOperationUrls.viewScore(customerId)
     );
 
-    // API returns array → take first item
-    const view = response.data.response?.[0];
+    // Get the entire conversations array
+    const views = response.data.response; // This should be the array
 
-    if (!view) {
-      setData(undefined);
+    if (!views || !Array.isArray(views)) {
+      setData([]); // Set empty array instead of undefined
       return;
     }
 
-    setData(view);
+    setData(views); // Set the entire array
   } catch (err) {
     const error = err as AxiosError<any>;
     toast.error(
       error.response?.data?.message?.general?.[0] ||
         "Error fetching customer context"
     );
+    setData([]); // Set empty array on error
   }
 };
-
 
 export const getAllOperationViews = async (
   setData: React.Dispatch<

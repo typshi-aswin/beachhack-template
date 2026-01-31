@@ -1,12 +1,11 @@
 export type CustomerType = {
- id: string;
+  id: string;
   primary_email: string;
   primary_phone: string;
   name: string;
   last_interaction_at: Date | null;
   consent_flags: Record<string, boolean>;
 };
-
 
 export type FactType = {
   key: string;
@@ -36,6 +35,14 @@ export type IntentType = {
   evidence_segments: string[];
 };
 
+export type SuggestedActionType = {
+  score: number;
+  reason: string;
+  action_type: string;
+  suggestion_id: string;
+  evidence_segments: string[];
+};
+
 export type CustomerOperationViewType = {
   id: string;
   channel: string;
@@ -43,4 +50,45 @@ export type CustomerOperationViewType = {
   friction: FrictionType;
   summary: SummaryType;
   intent: IntentType;
+  suggested_actions?: SuggestedActionType[]; // Make this optional
+  created_at: Date;
 };
+
+
+// types.ts
+export interface ConversationType {
+  id: string;
+  channel: string;
+  facts: {
+    key: string;
+    value: string;
+    is_pii: boolean;
+    fact_id: string;
+    evidence: string;
+    confidence: number;
+    segment_id: string;
+  }[];
+  friction: {
+    level: string;
+    score: number;
+    reasons: string[];
+  };
+  summary: {
+    confidence: number;
+    summary_long: string;
+    summary_short: string;
+  };
+  intent: {
+    intent: string;
+    confidence: number;
+    evidence_segments: string[];
+  };
+  suggested_actions: {
+    score: number;
+    reason: string;
+    action_type: string;
+    suggestion_id: string;
+    evidence_segments: string[];
+  }[];
+  created_at: string;
+}

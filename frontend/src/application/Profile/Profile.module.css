@@ -272,3 +272,348 @@ box-shadow: 0 4px 12px rgba(81, 9, 123, 0.28);
   color: #777;
   margin-top: 0.5rem;
 }
+
+
+
+.historyTimeline {
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+  margin-top: 1rem;
+}
+
+.historyItem {
+  display: grid;
+  grid-template-columns: 160px 24px 1fr;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.historyTime {
+  font-size: 0.75rem;
+  color: #777;
+  text-align: right;
+  padding-top: 0.2rem;
+}
+
+.historyDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--color-purple-shade-two);
+  margin-top: 0.3rem;
+}
+
+.historyContent {
+  background: white;
+  border-radius: 14px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.historySummary {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.historyMeta {
+  display: flex;
+  gap: 1.2rem;
+  font-size: 0.75rem;
+  color: #555;
+}
+
+.factRow {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-top: 0.4rem;
+}
+
+.factChip {
+  background: #f4f4ff;
+  border-radius: 12px;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.7rem;
+  display: flex;
+  gap: 0.3rem;
+}
+
+.factKey {
+  font-weight: 500;
+}
+
+.factValue {
+  color: #333;
+}
+
+
+
+
+/* Add these to your existing Profile.module.css */
+
+/* History Section Styles */
+.historyHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.conversationCount {
+  font-size: 0.9rem;
+  color: #666;
+  background: #f5f5f5;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+}
+
+.noHistory {
+  text-align: center;
+  color: #888;
+  padding: 2rem;
+}
+
+.historyContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Conversation Card */
+.conversationCard {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.conversationHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #eee;
+}
+
+.conversationMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.conversationDate {
+  font-weight: 600;
+  color: #333;
+}
+
+.channelBadge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.channelBadge.mail {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.channelBadge.chat {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.channelBadge.call {
+  background: #fff3e0;
+  color: #f57c00;
+}
+
+.channelBadge.other {
+  background: #f3e5f5;
+  color: #7b1fa2;
+}
+
+.frictionBadge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.frictionBadge.high {
+  background: #ffebee;
+  color: #d32f2f;
+}
+
+.frictionBadge.medium {
+  background: #fff3e0;
+  color: #f57c00;
+}
+
+.frictionBadge.low {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.conversationIntent {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.conversationIntent small {
+  color: #888;
+  margin-left: 0.25rem;
+}
+
+/* Summary Section */
+.summarySection {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #eee;
+}
+
+.summaryHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.summaryHeader h4 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.summaryHeader small {
+  color: #666;
+  font-size: 0.85rem;
+}
+
+.summaryText {
+  margin: 0;
+  line-height: 1.6;
+  color: #444;
+}
+
+/* Facts Section */
+.factsSection h4 {
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
+
+.noFacts {
+  color: #888;
+  font-style: italic;
+  text-align: center;
+  padding: 1rem;
+}
+
+.factsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.factCard {
+  background: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 1rem;
+}
+
+.factHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.factKey {
+  font-weight: 600;
+  color: #333;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+}
+
+.piiBadge {
+  background: #ffebee;
+  color: #d32f2f;
+  font-size: 0.7rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.factValue {
+  font-size: 0.95rem;
+  color: #444;
+  margin-bottom: 0.5rem;
+  word-break: break-word;
+}
+
+.factMeta {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.factEvidence {
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background: #fff;
+  border-left: 3px solid #1976d2;
+  font-size: 0.85rem;
+  color: #555;
+}
+
+/* Actions Section */
+.actionsSection {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #eee;
+}
+
+.actionsSection h4 {
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
+
+.actionsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.actionItem {
+  background: #e8f5e9;
+  border: 1px solid #c8e6c9;
+  border-radius: 6px;
+  padding: 0.75rem;
+}
+
+.actionItem strong {
+  display: block;
+  color: #2e7d32;
+  text-transform: capitalize;
+  margin-bottom: 0.25rem;
+}
+
+.actionItem p {
+  margin: 0.25rem 0;
+  font-size: 0.9rem;
+  color: #444;
+}
+
+.actionItem small {
+  color: #666;
+  font-size: 0.8rem;
+}
