@@ -2,7 +2,7 @@ import json
 
 from fastapi import APIRouter
 from sqlalchemy.future import select
-from sqlalchemy import or_
+from sqlalchemy import or_, desc
 from datetime import datetime
 
 from app.db.models import Customer, Interaction
