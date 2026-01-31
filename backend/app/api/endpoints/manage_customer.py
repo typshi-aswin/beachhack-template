@@ -47,7 +47,6 @@ async def create_customer(data: CustomerCreate, db: SessionDep, current_user: Cu
     )
     db.add(customer)
     await db.commit()
-    await db.refresh(customer)
 
     return CustomResponse(general_message="Customer created successfully").get_success_response()
 
