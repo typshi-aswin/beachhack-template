@@ -2,7 +2,8 @@ import json
 
 from fastapi import APIRouter
 from sqlalchemy.future import select
-from datetime import datetime, timezone
+from sqlalchemy import or_
+from datetime import datetime
 
 from app.db.models import Customer, Interaction
 from app.api.deps import SessionDep, CurrentUserDep
@@ -67,17 +68,75 @@ async def create_interaction(data: dict, db: SessionDep, current_user: CurrentUs
 
 
 @router.get("/{customer_id}/view-score/")
-async def score_indicator(customer_id: str, db: SessionDep, current_user: CurrentUserDep):
-    if not (await db.scalar(select(Customer).filter(Customer.id == customer_id))):
+async def score_indicator(customer_id: str, db: SessionDep, current_user: CurrentUserDep, search: str | None = None):
+    customer_exists = await db.scalar(select(Customer.id).where(Customer.id == customer_id))
+    if not customer_exists:
         return CustomResponse(general_message="Customer not found").get_failure_response()
-    
-    interactions = await db.scalars(select(Interaction).filter(Interaction.customer_id == customer_id))
 
-    return CustomResponse(response=[{
-        "id": interaction.id,
-        "channel": interaction.channel,
-        "facts": interaction.nlp_output["facts"],
-        "friction": interaction.nlp_output["friction"],
-        "summary": interaction.nlp_output["summary"],
-        "intent": interaction.nlp_output["intent"]
-    }for interaction in interactions]).get_success_response()
+    query = select(Interaction).where(Interaction.customer_id == customer_id)
+
+    if search:
+        search_pattern = f"%{search}%"
+        query = query.where(
+            or_(
+                Interaction.nlp_output["summary"]["summary_long"]
+                .astext.ilike(search_pattern),
+
+                Interaction.nlp_output["summary"]["summary_short"]
+                .astext.ilike(search_pattern),
+            )
+        ).order_by(desc(Interaction.created_at))
+
+    interactions = (await db.scalars(query)).all()
+
+    return CustomResponse(
+        response=[
+            {
+                "id": i.id,
+                "channel": i.channel,
+                "facts": i.nlp_output.get("facts"),
+                "friction": i.nlp_output.get("friction"),
+                "summary": i.nlp_output.get("summary"),
+                "intent": i.nlp_output.get("intent"),
+                "suggested_actions": i.nlp_output.get("suggested_actions"),
+                "created_at": str(i.created_at)
+            }
+            for i in interactions
+        ]
+    ).get_success_response()
+
+
+@router.get("/all-customer-score/")
+async def score_indicator(db: SessionDep, current_user: CurrentUserDep, search: str | None = None):
+    query = select(Interaction)
+
+    if search:
+        search_pattern = f"%{search}%"
+        query = query.where(
+            or_(
+                Interaction.nlp_output["summary"]["summary_long"]
+                .astext.ilike(search_pattern),
+
+                Interaction.nlp_output["summary"]["summary_short"]
+                .astext.ilike(search_pattern),
+            )
+        ).order_by(desc(Interaction.created_at))
+
+    interactions = (await db.scalars(query)).all()
+
+    return CustomResponse(
+        response=[
+            {
+                "id": i.id,
+                "customer_id": i.customer_id,
+                "channel": i.channel,
+                "facts": i.nlp_output.get("facts"),
+                "friction": i.nlp_output.get("friction"),
+                "summary": i.nlp_output.get("summary"),
+                "intent": i.nlp_output.get("intent"),
+                "suggested_actions": i.nlp_output.get("suggested_actions"),
+                "created_at": str(i.created_at)
+            }
+            for i in interactions
+        ]
+    ).get_success_response()
