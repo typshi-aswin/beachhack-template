@@ -1,8 +1,11 @@
+import json
+
 from typing import List
 from fastapi import APIRouter
 from sqlalchemy.future import select
+from sqlalchemy.orm import joinedload
 
-from app.db.models import Customer
+from app.db.models import Customer, Interaction
 from app.api.deps import SessionDep, CurrentUserDep
 from app.schemas.customer import CustomerCreate, CustomerUpdate, CustomerResponse
 from app.core.exception_handler import ExceptionLoggingRoute
@@ -47,7 +50,6 @@ async def create_customer(data: CustomerCreate, db: SessionDep, current_user: Cu
     )
     db.add(customer)
     await db.commit()
-    await db.refresh(customer)
 
     return CustomResponse(general_message="Customer created successfully").get_success_response()
 
@@ -62,7 +64,7 @@ async def list_customers(db: SessionDep, current_user: CurrentUserDep):
         "primary_email": customer.primary_email,
         "primary_phone": customer.primary_phone,
         "name": customer.name,
-        "last_interaction_at": customer.last_interaction_at,
+        "last_interaction_at": str(customer.last_interaction_at),
         "consent_flags": customer.consent_flags
     } for customer in customers]).get_success_response()
 
@@ -76,7 +78,7 @@ async def view_customer(customer_id: str, db: SessionDep, current_user: CurrentU
         "primary_email": customer.primary_email,
         "primary_phone": customer.primary_phone,
         "name": customer.name,
-        "last_interaction_at": customer.last_interaction_at,
+        "last_interaction_at": str(customer.last_interaction_at),
         "consent_flags": customer.consent_flags
     }]).get_success_response()
 
@@ -120,3 +122,75 @@ async def delete_customer(customer_id: str, db: SessionDep, current_user: Curren
     await db.delete(customer)
     await db.commit()
     return CustomResponse(general_message="Customer deleted successfully").get_success_response()
+
+
+@router.get("/{customer_id}/view-history/")
+async def create_interaction(customer_id: str, db: SessionDep, current_user: CurrentUserDep):
+    stmt = (
+        select(Customer)
+        .where(Customer.id == customer_id)
+        .options(
+            joinedload(Customer.interactions)
+                .joinedload(Interaction.memory_items),
+            joinedload(Customer.interactions)
+                .joinedload(Interaction.actions),
+            joinedload(Customer.memory_items),
+            joinedload(Customer.actions),
+        )
+    )
+
+    result = await db.scalar(stmt)
+
+    if not result:
+        return CustomResponse(
+            general_message="Customer not found"
+        ).get_failure_response()
+
+    customer = result
+
+    return CustomResponse(
+        response={
+            "customer": {
+                "id": customer.id,
+                "primary_email": customer.primary_email,
+                "primary_phone": customer.primary_phone,
+                "name": customer.name,
+                "last_interaction_at": str(customer.last_interaction_at),
+                "consent_flags": customer.consent_flags,
+            },
+            "interactions": [
+                {
+                    "id": i.id,
+                    "channel": i.channel,
+                    "raw_text": json.loads(i.raw_text),
+                    "status": i.status,
+                    "created_at": str(i.created_at),
+                    "memory_items": [
+                        {
+                            "key": m.key,
+                            "value": m.value,
+                            "confidence": m.confidence,
+                        }
+                        for m in i.memory_items
+                    ],
+                    "actions": [
+                        {
+                            "action_type": a.action_type,
+                            "status": a.status,
+                            "executed_at": a.executed_at,
+                        }
+                        for a in i.actions
+                    ],
+                }
+                for i in customer.interactions
+            ],
+            "customer_level_memory": [
+                {
+                    "key": m.key,
+                    "value": m.value,
+                    "confidence": m.confidence,
+                }
+                for m in customer.memory_items
+            ],
+        }
+    ).get_success_response()
