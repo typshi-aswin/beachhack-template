@@ -36,3 +36,62 @@
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 1.5rem;
 }
+
+
+
+.searchInput {
+  margin-top: 0.6rem;
+  width: 320px;
+  padding: 0.6rem 0.8rem;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  font-size: 0.85rem;
+}
+
+.searchCard {
+  background: white;
+  padding: 1rem;
+  border-radius: 14px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  min-width: 10rem;
+}
+
+.searchCard:hover {
+  transform: translateY(-2px);
+}
+
+.searchHeader {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: #666;
+  margin-bottom: 0.45rem;
+}
+
+.channel {
+  font-weight: 500;
+  margin-bottom: 0.45rem;
+}
+
+.friction {
+  color: #b42318;
+}
+
+.factRow {
+  display: flex;
+  gap: 0.4rem;
+  margin: 0.8rem 0;
+}
+
+.factChip {
+  background: #f2f2ff;
+  padding: 0.2rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.7rem;
+}
+
+.intentRow {
+  font-size: 0.75rem;
+  color: #555;
+}
