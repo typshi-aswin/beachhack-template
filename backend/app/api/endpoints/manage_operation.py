@@ -1,6 +1,6 @@
 import json
 
-from fastapi import APIRouter
+from fastapi import APIRouter, BackgroundTasks
 from sqlalchemy.future import select
 from sqlalchemy import or_, desc
 from datetime import datetime
@@ -15,7 +15,13 @@ router = APIRouter(route_class=ExceptionLoggingRoute)
 
 
 @router.post("/create/")
-async def create_interaction(data: dict, db: SessionDep, current_user: CurrentUserDep):
+async def create_interaction(
+    data: dict,
+    db: SessionDep,
+    current_user: CurrentUserDep,
+    background_tasks: BackgroundTasks,
+):
+    # ---------- Validation ----------
     required_fields = ["primary_email", "channel", "chat_data"]
     for field in required_fields:
         if field not in data:
@@ -25,9 +31,14 @@ async def create_interaction(data: dict, db: SessionDep, current_user: CurrentUs
 
     primary_email: str = data["primary_email"]
     channel: str = data["channel"]
-    chat_data = data["chat_data"]
-    nlp_result = None
+    chat_data: list = data["chat_data"]
 
+    if not isinstance(chat_data, list) or not chat_data:
+        return CustomResponse(
+            general_message="chat_data must be a non-empty list"
+        ).get_failure_response()
+
+    # ---------- Get or Create Customer ----------
     result = await db.scalars(
         select(Customer).where(Customer.primary_email == primary_email)
     )
@@ -40,44 +51,62 @@ async def create_interaction(data: dict, db: SessionDep, current_user: CurrentUs
             consent_flags=None,
         )
         db.add(customer)
-        await db.flush()  # ensures customer.id exists
+        await db.flush()  # ensure customer.id exists
 
+    # ---------- Get Latest Interaction ----------
     result = await db.scalars(
         select(Interaction)
         .where(
             Interaction.customer_id == customer.id,
-            Interaction.channel == channel
+            Interaction.channel == channel,
         )
         .order_by(Interaction.created_at.desc())
     )
     interaction = result.first()
 
-    if interaction:
-        interaction.raw_text = json.dumps(chat_data)
-    else:
-        segments = [{
+    # ---------- Prepare NLP Segments ----------
+    segments = [
+        {
             "segment_id": f"seg_{i}",
             "speaker": m.get("role"),
-            "text": m["text"],
-            "confidence": m.get("confidence", 0.85)
-        } for i, m in enumerate(chat_data)]
+            "text": m.get("text", ""),
+            "confidence": m.get("confidence", 0.85),
+        }
+        for i, m in enumerate(chat_data)
+    ]
 
+    # ---------- Create or Update Interaction ----------
+    if interaction:
+        interaction.raw_text = json.dumps(chat_data)
+        await db.flush()  # interaction.id already exists
+    else:
         interaction = Interaction(
             customer_id=customer.id,
             channel=channel,
             raw_text=json.dumps(chat_data),
             status="Pending",
         )
-        nlp_result = run_pipeline(interaction.id, customer.id, segments)
-        interaction.nlp_output = nlp_result
         db.add(interaction)
+        await db.flush()  # 👈 CRITICAL: interaction.id exists here
 
+    # ---------- Run NLP (non-blocking) ----------
+    def run_nlp_task(interaction_id, customer_id, segments):
+        result = run_pipeline(interaction_id, customer_id, segments)
+        return result
+
+    # If NLP is heavy → background
+    nlp_result = run_pipeline(interaction.id, customer.id, segments)
+    interaction.nlp_output = nlp_result
+    interaction.status = "Processed"
+
+    # ---------- Update Customer ----------
     customer.last_interaction_at = datetime.utcnow()
 
     await db.commit()
+
     return CustomResponse(
         general_message="Customer interaction processed successfully",
-        response=nlp_result
+        response=nlp_result,
     ).get_success_response()
 
 
