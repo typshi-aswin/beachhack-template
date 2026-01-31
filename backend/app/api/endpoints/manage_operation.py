@@ -9,6 +9,7 @@ from app.db.models import Customer, Interaction
 from app.api.deps import SessionDep, CurrentUserDep
 from app.core.exception_handler import ExceptionLoggingRoute
 from app.util.response import CustomResponse
+from app.util.ml_util import run_pipeline
 
 router = APIRouter(route_class=ExceptionLoggingRoute)
 
@@ -25,6 +26,7 @@ async def create_interaction(data: dict, db: SessionDep, current_user: CurrentUs
     primary_email: str = data["primary_email"]
     channel: str = data["channel"]
     chat_data = data["chat_data"]
+    nlp_result = None
 
     result = await db.scalars(
         select(Customer).where(Customer.primary_email == primary_email)
@@ -53,18 +55,30 @@ async def create_interaction(data: dict, db: SessionDep, current_user: CurrentUs
     if interaction:
         interaction.raw_text = json.dumps(chat_data)
     else:
+        segments = [{
+            "segment_id": f"seg_{i}",
+            "speaker": m.get("role"),
+            "text": m["text"],
+            "confidence": m.get("confidence", 0.85)
+        } for i, m in enumerate(chat_data)]
+
         interaction = Interaction(
             customer_id=customer.id,
             channel=channel,
             raw_text=json.dumps(chat_data),
             status="Pending",
         )
+        nlp_result = run_pipeline(interaction.id, customer.id, segments)
+        interaction.nlp_output = nlp_result
         db.add(interaction)
 
     customer.last_interaction_at = datetime.utcnow()
 
     await db.commit()
-    return CustomResponse(general_message="Customer interaction processed successfully").get_success_response()
+    return CustomResponse(
+        general_message="Customer interaction processed successfully",
+        response=nlp_result
+    ).get_success_response()
 
 
 @router.get("/{customer_id}/view-score/")
