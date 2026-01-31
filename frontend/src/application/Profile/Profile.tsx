@@ -4,6 +4,8 @@ import MainCardLayout from "../../components/MainCardLayout/MainCardLayout";
 import styles from "./Profile.module.css";
 import { getSingleCustomer } from "../../apis/customer";
 import { CustomerType } from "../../types";
+import { getCustomerOperationView } from "../../apis/operations";
+import { CustomerOperationViewType } from "../../types";
 
 const profileImages = [
   "/default-one.png",
@@ -43,6 +45,15 @@ const timelineEvents = [
 const Profile = () => {
   const params = useParams();
   const customerId = params["customer-id"];
+  const [operationView, setOperationView] =
+    useState<CustomerOperationViewType>();
+
+  useEffect(() => {
+    if (!customerId) return;
+
+    getSingleCustomer(customerId, setCustomer);
+    getCustomerOperationView(customerId, setOperationView);
+  }, [customerId]);
 
   const [customer, setCustomer] = useState<CustomerType>();
   const [showTimeline, setShowTimeline] = useState(false);
@@ -137,12 +148,15 @@ const Profile = () => {
           </div>
 
           <p className={styles.summaryText}>
-            Customer is primarily enquiring about delivery delays and refund
-            status. Initial interactions were positive, but sentiment declined
-            after repeated follow-ups regarding an undelivered order. Issue was
-            escalated due to high friction during a recent call. No unresolved
-            blockers currently remain.
+            {operationView?.summary?.summary_long ||
+              "No customer summary available yet."}
           </p>
+          <small className={styles.summaryConfidence}>
+            Confidence:{" "}
+            {operationView?.summary?.confidence
+              ? `${Math.round(operationView.summary.confidence * 100)}%`
+              : "—"}
+          </small>
 
           {/* ===== TIMELINE (COLLAPSIBLE) ===== */}
           {showTimeline && (
@@ -230,8 +244,23 @@ const Profile = () => {
           <div className={styles.healthGrid}>
             <div className={styles.healthItem}>
               <span>Friction Score</span>
-              <strong>61 / 100</strong>
-              <small className={styles.improving}>Improving</small>
+              <strong>
+                {operationView
+                  ? Math.round(operationView.friction.score * 100)
+                  : "—"}{" "}
+                / 100
+              </strong>
+              <small
+                className={
+                  operationView?.friction.level === "high"
+                    ? styles.bad
+                    : operationView?.friction.level === "medium"
+                      ? styles.neutral
+                      : styles.improving
+                }
+              >
+                {operationView?.friction.level || "—"}
+              </small>
             </div>
 
             <div className={styles.healthItem}>
