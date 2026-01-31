@@ -10,5 +10,6 @@ export const authUrls = {
 }
 
 export const manageCustomerUrls = {
-    list: manageCustomerURL(`/list/`)
+    list: manageCustomerURL(`/list/`),
+    info:(customer_id: string) => manageCustomerURL(`/${customer_id}/view`)
 }
