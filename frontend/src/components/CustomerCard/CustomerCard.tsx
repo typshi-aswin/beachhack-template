@@ -7,6 +7,7 @@ interface CustomerCardProps {
   phone: string;
   email: string;
   status?: string;
+onClick?: () => void;
 }
 
 const images = [
@@ -23,13 +24,14 @@ const CustomerCard: React.FC<CustomerCardProps> = ({
   phone,
   email,
   status,
+  onClick,
 }) => {
   const randomImage = useMemo(() => {
     return images[Math.floor(Math.random() * images.length)];
   }, []);
 
   return (
-    <div className={styles.card}>
+    <div className={styles.card} onClick={onClick}>
       <div className={styles.header}>
         <img src={randomImage} alt="avatar" className={styles.avatar} />
 
