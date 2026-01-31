@@ -66,7 +66,4 @@ async def create_interaction(data: dict, db: SessionDep, current_user: CurrentUs
     customer.last_interaction_at = datetime.utcnow()
 
     await db.commit()
-
-    return CustomResponse(
-        general_message="Customer interaction processed successfully"
-    ).get_success_response()
+    return CustomResponse(general_message="Customer interaction processed successfully").get_success_response()
