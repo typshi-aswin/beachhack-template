@@ -134,6 +134,7 @@ async def score_indicator(db: SessionDep, current_user: CurrentUserDep, search: 
                 "summary": i.nlp_output.get("summary"),
                 "intent": i.nlp_output.get("intent"),
                 "suggested_actions": i.nlp_output.get("suggested_actions"),
+                "created_at": str(i.created_at)
             }
             for i in interactions
         ]
