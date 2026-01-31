@@ -53,3 +53,35 @@ export const getAllOperationViews = async (
     );
   }
 };
+
+
+export type ChatMessagePayload = {
+  id: string;
+  role: "system" | "user" | "assistant";
+  text: string;
+};
+
+type CreateOperationPayload = {
+  primary_email: string;
+  channel: string;
+  chat_data: ChatMessagePayload[];
+};
+
+export const createOperation = async (payload: CreateOperationPayload) => {
+  try {
+    const response = await privateGateway.post(
+      manageOperationUrls.create,
+      payload
+    );
+
+    toast.success("Conversation saved successfully");
+    return response.data;
+  } catch (err) {
+    const error = err as AxiosError<any>;
+    toast.error(
+      error.response?.data?.message?.general?.[0] ||
+        "Error creating conversation"
+    );
+    throw err;
+  }
+};

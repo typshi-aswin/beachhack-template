@@ -18,4 +18,5 @@ export const manageCustomerUrls = {
 export const manageOperationUrls = {
     viewScore:(customer_id: string) => manageOperation(`/${customer_id}/view-score`),
     viewAllScore: manageOperation(`/all-customer-score/`),
+    create: manageOperation(`/create/`),
 }

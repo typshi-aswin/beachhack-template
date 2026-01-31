@@ -1,6 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import MainCardLayout from "../../components/MainCardLayout/MainCardLayout";
 import styles from "./CustomerChat.module.css";
+import { getAllCustomers } from "../../apis/customer";
+import { createOperation } from "../../apis/operations";
+import { CustomerType } from "../../types";
+import { ChatMessagePayload } from "../../apis/operations";
 
 type Sender = "agent" | "customer";
 
@@ -12,37 +16,37 @@ interface Message {
 }
 
 interface Conversation {
-  customerId: string;
-  customerName: string;
+  customer: CustomerType;
   messages: Message[];
 }
 
-
-const dummyCustomers = [
-  { id: "1", name: "Brooklyn Simmons" },
-  { id: "2", name: "Leslie Alexander" },
-  { id: "3", name: "Cody Fisher" },
-];
-
 const CustomerChat = () => {
   const [started, setStarted] = useState(false);
+  const [customers, setCustomers] = useState<CustomerType[]>();
   const [activeConversation, setActiveConversation] =
     useState<Conversation | null>(null);
+
   const [input, setInput] = useState("");
-  const [sender, setSender] = useState<"agent" | "customer">("agent");
- console.log(activeConversation);
-  const startConversation = (customer: { id: string; name: string }) => {
-    setActiveConversation({
-      customerId: customer.id,
-      customerName: customer.name,
-      messages: [],
-    });
-  };
+  const [sender, setSender] = useState<Sender>("agent");
+
+  useEffect(() => {
+    if (started) {
+      getAllCustomers(setCustomers);
+    }
+  }, [started]);
+
+  const startConversation = (customer: CustomerType) => {
+  setActiveConversation({
+    customer,
+    messages: [],
+  });
+};
+
 
   const sendMessage = () => {
     if (!input.trim() || !activeConversation) return;
 
-    const newMessage = {
+    const newMessage: Message = {
       id: crypto.randomUUID(),
       sender,
       text: input,
@@ -57,6 +61,24 @@ const CustomerChat = () => {
     setInput("");
   };
 
+  const submitConversation = async () => {
+    if (!activeConversation) return;
+    const payload = {
+      primary_email: activeConversation.customer.primary_email,
+      channel: "Mail",
+      chat_data: activeConversation.messages.map(
+        (msg): ChatMessagePayload => ({
+          id: msg.id,
+          role: msg.sender === "agent" ? "assistant" : "user",
+          text: msg.text,
+        }),
+      ),
+    };
+
+    await createOperation(payload);
+    setActiveConversation(null);
+  };
+
   return (
     <MainCardLayout>
       <div className={styles.container}>
@@ -69,10 +91,10 @@ const CustomerChat = () => {
           </button>
         ) : (
           <div className={styles.chatWrapper}>
-            {/* Customer list */}
+            {/* ================= CUSTOMER LIST ================= */}
             <div className={styles.customerList}>
               <h3>Customers</h3>
-              {dummyCustomers.map((customer) => (
+              {customers?.map((customer) => (
                 <div
                   key={customer.id}
                   className={styles.customerItem}
@@ -83,7 +105,7 @@ const CustomerChat = () => {
               ))}
             </div>
 
-            {/* Chat window */}
+            {/* ================= CHAT WINDOW ================= */}
             <div className={styles.chatWindow}>
               {!activeConversation ? (
                 <div className={styles.emptyState}>
@@ -92,7 +114,7 @@ const CustomerChat = () => {
               ) : (
                 <>
                   <div className={styles.header}>
-                    {activeConversation.customerName}
+                    {activeConversation.customer.name}
                   </div>
 
                   <div className={styles.messages}>
@@ -113,9 +135,7 @@ const CustomerChat = () => {
                   <div className={styles.controls}>
                     <select
                       value={sender}
-                      onChange={(e) =>
-                        setSender(e.target.value as "agent" | "customer")
-                      }
+                      onChange={(e) => setSender(e.target.value as Sender)}
                     >
                       <option value="agent">Agent</option>
                       <option value="customer">Customer</option>
@@ -128,6 +148,12 @@ const CustomerChat = () => {
                     />
 
                     <button onClick={sendMessage}>Send</button>
+                    <button
+                      className={styles.submitButton}
+                      onClick={submitConversation}
+                    >
+                      End & Save
+                    </button>
                   </div>
                 </>
               )}
