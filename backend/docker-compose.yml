@@ -13,7 +13,7 @@ services:
       - /var/log/customerx:/var/log/customerx
     env_file:
       - .env
-    mem_limit: 358m
+    # mem_limit: 358m
     networks:
       - shared_network
 
