@@ -103,3 +103,38 @@ async def score_indicator(customer_id: str, db: SessionDep, current_user: Curren
             for i in interactions
         ]
     ).get_success_response()
+
+
+@router.get("/all-customer-score/")
+async def score_indicator(db: SessionDep, current_user: CurrentUserDep, search: str | None = None):
+    query = select(Interaction)
+
+    if search:
+        search_pattern = f"%{search}%"
+        query = query.where(
+            or_(
+                Interaction.nlp_output["summary"]["summary_long"]
+                .astext.ilike(search_pattern),
+
+                Interaction.nlp_output["summary"]["summary_short"]
+                .astext.ilike(search_pattern),
+            )
+        )
+
+    interactions = (await db.scalars(query)).all()
+
+    return CustomResponse(
+        response=[
+            {
+                "id": i.id,
+                "customer_id": i.customer_id,
+                "channel": i.channel,
+                "facts": i.nlp_output.get("facts"),
+                "friction": i.nlp_output.get("friction"),
+                "summary": i.nlp_output.get("summary"),
+                "intent": i.nlp_output.get("intent"),
+                "suggested_actions": i.nlp_output.get("suggested_actions"),
+            }
+            for i in interactions
+        ]
+    ).get_success_response()
