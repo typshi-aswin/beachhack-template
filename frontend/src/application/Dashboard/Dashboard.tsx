@@ -5,10 +5,12 @@ import { IoMdDownload } from "react-icons/io";
 import CustomerCard from "../../components/CustomerCard/CustomerCard";
 import { getAllCustomers } from "../../apis/customer";
 import { CustomerType } from "../../types";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
-  const [customers, setCustomers] = useState<CustomerType[]>();
 
+    const navigate = useNavigate();
+  const [customers, setCustomers] = useState<CustomerType[]>();
   useEffect(() => {
     getAllCustomers(setCustomers);
   }, []);
@@ -36,6 +38,7 @@ const Dashboard = () => {
                   ? new Date(customer.last_interaction_at).toLocaleString()
                   : "-"
               }
+              onClick={() => navigate(`/${customer.id}/profile`) }
             />
           ))}
 
