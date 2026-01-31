@@ -1,0 +1,97 @@
+# ===============================
+# Python
+# ===============================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+dist/
+build/
+
+# ===============================
+# Virtual Environments
+# ===============================
+venv/
+venv*/
+.env
+.env.*
+.python-version
+
+# ===============================
+# FastAPI / Uvicorn
+# ===============================
+*.log
+uvicorn.log
+
+# ===============================
+# ML / Models / Caches
+# ===============================
+.cache/
+.huggingface/
+.hf_cache/
+models/
+checkpoints/
+
+# Whisper temp files
+*.wav
+*.mp3
+*.flac
+*.m4a
+*.ogg
+
+# ===============================
+# Embeddings / Vector Stores
+# ===============================
+*.faiss
+*.index
+*.npy
+*.npz
+vector_store/
+embeddings_store/
+
+# ===============================
+# Temporary files
+# ===============================
+tmp/
+temp/
+*.tmp
+*.bak
+*.swp
+
+# ===============================
+# OS / Editor
+# ===============================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# VS Code
+.vscode/
+
+# PyCharm / IntelliJ
+.idea/
+
+# ===============================
+# Test artifacts
+# ===============================
+test_audio/
+test_data/
+coverage/
+.pytest_cache/
+
+# ===============================
+# Logs & runtime output
+# ===============================
+logs/
+*.out
+
+# ===============================
+# Secrets / Keys
+# ===============================
+*.key
+*.pem
+*.crt
+secrets/
+credentials/
